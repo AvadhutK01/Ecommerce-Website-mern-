@@ -13,6 +13,16 @@ module.exports = (err, req, res, next) => {
         const error = new ErrorHandler(message, 400);
     }
 
+    if (err.code === 11000) {
+        const message = "Duplicate field entered";
+        const error = new ErrorHandler(message, 400);
+    }
+
+    if (err.name === "JsonWebTokenError") {
+        const message = "Invalid token"
+        const error = new ErrorHandler(message, 401)
+    }
+
     res.status(err.statusCode).json({
         success: false,
         message: err.message
