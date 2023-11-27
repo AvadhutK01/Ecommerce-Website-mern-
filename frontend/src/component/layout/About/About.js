@@ -1,12 +1,14 @@
 import React from "react";
 import "./aboutSection.css";
 import { Button, Header, Image } from 'semantic-ui-react';
+import MetaData from "../MetaData";
 const About = () => {
     const visitInstagram = () => {
         window.location = "";
     };
     return (
         <div className="aboutSection">
+            <MetaData title={"About Us"} />
             <div></div>
             <div className="aboutSectionGradient"></div>
             <div className="aboutSectionContainer">
