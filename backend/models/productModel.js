@@ -48,26 +48,21 @@ const productSchema = new mongoose.Schema({
             user: {
                 type: mongoose.Schema.ObjectId,
                 ref: "users",
-                required: true
             },
             name: {
                 type: String,
-                required: true
             },
             rating: {
                 type: Number,
-                required: true
             },
             comment: {
                 type: String,
-                required: true
             }
         },
     ],
     user: {
         type: mongoose.Schema.ObjectId,
         ref: "users",
-        required: true
     },
     createdAt: {
         type: Date,

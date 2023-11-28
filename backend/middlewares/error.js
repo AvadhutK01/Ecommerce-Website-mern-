@@ -1,5 +1,5 @@
+const { default: mongoose } = require("mongoose");
 const ErrorHandler = require("../util/errorHandler");
-
 
 
 module.exports = (err, req, res, next) => {

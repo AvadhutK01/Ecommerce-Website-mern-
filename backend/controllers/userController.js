@@ -6,19 +6,24 @@ const sendEmail = require('../util/sendEmail.js');
 
 //Register user
 exports.registerUser = catchErrors(async (req, res, next) => {
-    const { name, email, password } = req.body;
+    try {
+        const { name, email, password } = req.body;
 
-    const user = await User.create({
-        name: name,
-        email: email,
-        password: password,
-        avatar: {
-            public_id: 'no-image',
-            url: 'https://res.cloudinary.com/dqvjgxzlk/image/upload/v157'
-        }
-    })
+        const user = await User.create({
+            name: name,
+            email: email,
+            password: password,
+            avatar: {
+                public_id: 'no-image',
+                url: 'blank'
+            }
+        })
 
-    sendToken(user, 201, res)
+        sendToken(user, 201, res)
+    }
+    catch (Err) {
+        console.log(Err);
+    }
 })
 
 //Login user

@@ -10,7 +10,7 @@ productRouter.route('/admin/product/new').post(isAuthUser, authorizeRoles('admin
 
 productRouter.route('/admin/product/:id').put(isAuthUser, authorizeRoles('admin'), updateProduct).delete(isAuthUser, authorizeRoles('admin'), deleteProduct);
 
-productRouter.route('/product/:id').get(getProductDetails);
+productRouter.route("/product/:id").get(getProductDetails);
 
 
 module.exports = productRouter;
