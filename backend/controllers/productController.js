@@ -6,31 +6,50 @@ const ApiFeatures = require('../util/apiFeatures');
 
 //Create Product--Admin
 exports.createProduct = errorFunc(async (req, res) => {
-    req.body.user = req.user.id;
-    const product = await Product.create(req.body);
-    res.status(201).json({
-        success: true,
-        product
-    })
+    try {
+        req.body.user = req.user.id;
+        const product = await Product.create(req.body);
+        res.status(201).json({
+            success: true,
+            product
+        })
+    }
+    catch (err) {
+        console.log(err);
+    }
 }
 )
 
 //Get All Product
-exports.getAllProducts = errorFunc(async (req, res) => {
+exports.getAllProducts = errorFunc(async (req, res, next) => {
     try {
-        const resutlPerPage = 5;
-        const productCount = await Product.countDocuments();
-        const apiFeature = new ApiFeatures(Product.findOne(), req.query).search().filter().pagination(resutlPerPage);
-        const products = await apiFeature.query;
+        const resultPerPage = 8;
+        const productsCount = await Product.countDocuments();
+
+        const apiFeature = new ApiFeatures(Product.find(), req.query)
+            .search()
+            .filter();
+
+        let products = await apiFeature.query;
+
+        let filteredProductsCount = products.length;
+
+        apiFeature.pagination(resultPerPage);
+
+        products = await apiFeature.query;
+
         res.status(200).json({
             success: true,
             products,
-            productCount
+            productsCount,
+            resultPerPage,
+            filteredProductsCount,
         });
-    } catch (error) {
-        console.log(error);
     }
-})
+    catch (err) {
+        console.log(err);
+    }
+});
 
 //Get single Product
 exports.getProductDetails = errorFunc(async (req, res, next) => {

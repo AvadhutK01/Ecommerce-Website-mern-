@@ -1,11 +1,9 @@
-//creating token and saving in cookie
-
 const sendToken = (user, statusCode, res) => {
     const token = user.getJwtToken();
 
     const options = {
         expires: new Date(
-            Date.now + 2 * 24 * 60 * 60 * 1000
+            Date.now() + 2 * 24 * 60 * 60 * 1000
         ),
         httpOnly: true
     }
@@ -17,4 +15,4 @@ const sendToken = (user, statusCode, res) => {
     })
 }
 
-module.exports = sendToken
+module.exports = sendToken;
