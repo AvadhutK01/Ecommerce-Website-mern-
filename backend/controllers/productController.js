@@ -17,16 +17,19 @@ exports.createProduct = errorFunc(async (req, res) => {
 
 //Get All Product
 exports.getAllProducts = errorFunc(async (req, res) => {
-
-    const resutlPerPage = 5;
-    const productCount = await Product.countDocuments();
-    const apiFeature = new ApiFeatures(Product.findOne(), req.query).search().filter().pagination(resutlPerPage);
-    const products = await apiFeature.query;
-    res.status(200).json({
-        success: true,
-        products,
-        productCount
-    });
+    try {
+        const resutlPerPage = 5;
+        const productCount = await Product.countDocuments();
+        const apiFeature = new ApiFeatures(Product.findOne(), req.query).search().filter().pagination(resutlPerPage);
+        const products = await apiFeature.query;
+        res.status(200).json({
+            success: true,
+            products,
+            productCount
+        });
+    } catch (error) {
+        console.log(error);
+    }
 })
 
 //Get single Product
