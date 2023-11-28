@@ -21,22 +21,13 @@ exports.createProduct = errorFunc(async (req, res) => {
 )
 
 //Get All Product
-exports.getAllProducts = errorFunc(async (req, res, next) => {
+exports.getAllProducts = errorFunc(async (req, res) => {
     try {
-        const resultPerPage = 8;
+        const resultPerPage = 5;
         const productsCount = await Product.countDocuments();
-
-        const apiFeature = new ApiFeatures(Product.find(), req.query)
-            .search()
-            .filter();
-
-        let products = await apiFeature.query;
-
+        const apiFeature = new ApiFeatures(Product.find(), req.query).search().filter().pagination(resultPerPage);
+        const products = await apiFeature.query.exec();
         let filteredProductsCount = products.length;
-
-        apiFeature.pagination(resultPerPage);
-
-        products = await apiFeature.query;
 
         res.status(200).json({
             success: true,
@@ -45,11 +36,11 @@ exports.getAllProducts = errorFunc(async (req, res, next) => {
             resultPerPage,
             filteredProductsCount,
         });
-    }
-    catch (err) {
-        console.log(err);
+    } catch (error) {
+        console.log(error);
     }
 });
+
 
 //Get single Product
 exports.getProductDetails = errorFunc(async (req, res, next) => {

@@ -5,8 +5,8 @@ import { clearErrors, getProduct } from "../../actions/productAction";
 import Loader from "../layout/Loader/Loader";
 import ProductCard from "../Home/ProductCard";
 import Pagination from "react-js-pagination";
+import { Slider, Typography } from "@mui/material"
 import MetaData from "../layout/MetaData";
-import { Slider, Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
 
 const categories = [
@@ -20,8 +20,6 @@ const categories = [
 ];
 
 const Products = () => {
-    const { keyword } = useParams();
-
     const dispatch = useDispatch();
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -39,6 +37,7 @@ const Products = () => {
         filteredProductsCount,
     } = useSelector((state) => state.products);
 
+    const { keyword } = useParams();
 
     const setCurrentPageNo = (e) => {
         setCurrentPage(e);
@@ -51,12 +50,11 @@ const Products = () => {
 
     useEffect(() => {
         if (error) {
-            alert.error(error);
             dispatch(clearErrors());
         }
 
         dispatch(getProduct(keyword, currentPage, price, category, ratings));
-    }, [dispatch, keyword, currentPage, price, category, ratings, alert, error]);
+    }, [dispatch, keyword, currentPage, price, category, ratings, error]);
 
     return (
         <Fragment>
