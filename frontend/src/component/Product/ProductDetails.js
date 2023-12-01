@@ -76,7 +76,6 @@ const ProductDetails = () => {
                             <Carousel>
                                 {product.image &&
                                     product.image.map((item, i) => (
-                                        console.log("Image URL:", item.Url),
                                         <img
                                             className="CarouselImage"
                                             key={i}

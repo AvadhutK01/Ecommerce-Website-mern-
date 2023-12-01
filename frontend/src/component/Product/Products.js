@@ -5,7 +5,7 @@ import { clearErrors, getProduct } from "../../actions/productAction";
 import Loader from "../layout/Loader/Loader";
 import ProductCard from "../Home/ProductCard";
 import Pagination from "react-js-pagination";
-import { Slider, Typography } from "@mui/material"
+import { Slider, Typography, Rating } from "@mui/material"
 import MetaData from "../layout/MetaData";
 import { useParams } from "react-router-dom";
 
