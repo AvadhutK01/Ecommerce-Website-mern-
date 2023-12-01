@@ -7,18 +7,21 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../../actions/userAction";
 
 const UserOptions = ({ user }) => {
+    const { cartItems } = useSelector((state) => state.cart);
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    console.log(user);
     const options = [
         { icon: <ListAlt />, name: "Orders", func: orders },
         { icon: <Person />, name: "Profile", func: account },
         {
             icon: (
                 <ShoppingCart
+                    style={{ color: cartItems.length > 0 ? "tomato" : "unset" }}
                 />
             ),
+            name: `Cart(${cartItems.length})`,
+            func: cart
 
         },
         { icon: <ExitToApp />, name: "Logout", func: logoutUser },
