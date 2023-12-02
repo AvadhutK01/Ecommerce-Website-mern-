@@ -7,7 +7,7 @@ const { createReview, getProductReviews, deleteReview } = require('../controller
 userRouter.route('/register').post(registerUser);
 userRouter.route('/login').post(loginUser);
 userRouter.route('/logout').get(logout);
-userRouter.route('/pasword/forgot', forgetPassword);
+userRouter.route('/password/forgot').post(forgetPassword);
 userRouter.route('/password/reset/:token').put(resetPassword)
 userRouter.route('/me').get(isAuthUser, getUserDetails)
 userRouter.route('/password/update').put(isAuthUser, updateUserPassword)

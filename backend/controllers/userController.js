@@ -2,8 +2,9 @@ const ErrorHandler = require('../util/errorHandler');
 const catchErrors = require('../middlewares/catchErrors');
 const User = require('../models/userModel');
 const sendToken = require('../util/jwtToken')
-const sendEmail = require('../util/sendEmail.js');
+var SibApiV3Sdk = require('sib-api-v3-sdk');
 const cloudinary = require('cloudinary');
+const crypto = require('crypto');
 
 //Register user
 exports.registerUser = catchErrors(async (req, res, next) => {
@@ -75,33 +76,43 @@ exports.logout = catchErrors(async (req, res, next) => {
 //forget password
 
 exports.forgetPassword = catchErrors(async (req, res, next) => {
-    const user = await User.findOne({ email: req.body.email });
-    if (!user) {
-        return next(new ErrorHandler(`No account associated with ${req.body.email}`, 404))
-    }
-
-    //get resetpassword token
-
-    const resetToken = user.getResetPasswordToke();
-
-    await user.save({ validateBeforeSave: false });
-
-    const resetPasswordUrl = `${req.protocol}://${req.get('host')}/api/v1/password/reset/${resetToken}`;
-
-    const message = `Your password reset token is :- \n\n ${resetPasswordUrl}`;
-
     try {
-        await sendEmail({
-            email: user.email,
-            subject: "Password Reset Token",
-            message
-        })
-        res.status(200).json({
-            success: true,
-            message: "Check your email for the link to reset your password."
-        });
+        console.log("object");
+        const user = await User.findOne({ email: req.body.email });
+        if (!user) {
+            return next(new ErrorHandler(`No account associated with ${req.body.email}`, 404))
+        }
 
+        //get resetpassword token
+
+        const resetToken = user.getResetPassword();
+
+        await user.save({ validateBeforeSave: false });
+
+        const resetPasswordUrl = `${process.env.FORGET_LINK}password/reset/${resetToken}`;
+
+        const message = `Your password reset token is :- \n\n ${resetPasswordUrl}`;
+
+
+        var defaultClient = SibApiV3Sdk.ApiClient.instance;
+        var apiKey = defaultClient.authentications['api-key'];
+        apiKey.apiKey = process.env.FORGETPASSWORDKEY;
+        var apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+        const sender = { email: "kelaskaravadhut11@gmail.com" };
+        const receivers = [{ email: `${user.email}` }];
+        apiInstance.sendTransacEmail({
+            sender,
+            to: receivers,
+            subject: "Reset Password",
+            textContent: `${message}`
+        }).then(() => {
+            res.status(200).json({
+                success: true,
+                message: "Check your email for the link to reset your password."
+            });
+        });
     } catch (error) {
+        console.log(error);
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
         await user.save({ validateBeforeSave: false });
@@ -111,25 +122,28 @@ exports.forgetPassword = catchErrors(async (req, res, next) => {
 
 //Reset Password
 exports.resetPassword = catchErrors(async (req, res, next) => {
-    //Get hashed token from url
-    const resetPasswordToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
+    try {
+        //Get hashed token from url
+        const resetPasswordToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
+        const user = await User.findOne({
+            resetPasswordToken,
+            resetPasswordExpire: { $gt: Date.now() }
+        });
+        if (!user) {
+            return next(new ErrorHandler("Invalid or expired token.", 400))
+        }
 
-    const user = await User.findOne({
-        resetPasswordToken,
-        resetPasswordExpire: { $gt: Date.now() }
-    });
-    if (!user) {
-        return next(new ErrorHandler("Invalid or expired token.", 400))
+        if (req.body.password !== req.body.confirmPassword) {
+            return next(new ErrorHandler("Password and confirm password do not match.", 400))
+        }
+        user.password = req.body.password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+        await user.save();
+        sendToken(user, 200, res);
+    } catch (err) {
+        console.log(err);
     }
-
-    if (req.body.password !== req.body.confirmPassoword) {
-        return next(new ErrorHandler("Password and confirm password do not match.", 400))
-    }
-    user.password = req.body.password;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-    await user.save();
-    sendToken(user, 200, res);
 }
 
 )
@@ -215,21 +229,21 @@ exports.updateUserDetails = catchErrors(async (req, res, next) => {
 })
 
 exports.getAllUser = catchErrors(async (req, res, next) => {
-    const user = await User.findById(req.params.id);
-    if (!user) {
-        return next(new ErrorHandler(`There is no user with id ${req.params.id}`, 404))
+    const users = await User.find();
+    if (!users) {
+        return next(new ErrorHandler(`There is no users`, 404))
     }
     res.status(200).json({
         success: true,
-        user
+        users
     })
 })
 
 exports.getSingleUser = catchErrors(async (req, res, next) => {
-    const users = await User.find()
+    const user = await User.findById(req.params.id)
     res.status(200).json({
         success: true,
-        users
+        user
     })
 })
 
@@ -238,7 +252,7 @@ exports.updateUserRole = catchErrors(async (req, res, next) => {
         role: req.body.role
     }
 
-    const user = await User.findByIdAndUpdate(req.user.id, Data, {
+    const user = await User.findByIdAndUpdate(req.params.id, Data, {
         new: true,
         runValidators: true,
         useFindAndModify: false

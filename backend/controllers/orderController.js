@@ -94,29 +94,33 @@ exports.getAllOrder = errorFunc(async (req, res, next) => {
 })
 
 exports.updateOrderStatus = errorFunc(async (req, res, next) => {
-    const order = await Order.find(req.params.id);
-    if (!order) {
-        return next(new ErrorHandler(`No order found with id ${req.params.id}`, 404));
-    }
-    if (order.orderStatus === "Delivered") {
-        return next(new ErrorHandler("This order has already been delivered", 403));
-    }
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return next(new ErrorHandler(`No order found with id ${req.params.id}`, 404));
+        }
+        if (order.orderStatus === "Delivered") {
+            return next(new ErrorHandler("This order has already been delivered", 403));
+        }
 
-    order.orderItems.forEach(async o => {
-        await updateStocks(o.product, o.quantity)
-    });
+        order.orderItems.forEach(async o => {
+            await updateStocks(o.product, o.quantity)
+        });
 
-    order.orderStatus = req.body.status;
-    if (req.body.status === 'Delivered') {
-        order.deliveredAt = Date.now()
+        order.orderStatus = req.body.status;
+        if (req.body.status === 'Delivered') {
+            order.deliveredAt = Date.now()
+        }
+        await order.save({
+            validateBeforeSave: false
+        })
+        res.status(200).json({
+            success: true,
+            message: 'Updated'
+        })
+    } catch (err) {
+        console.log(err);
     }
-    await order.save({
-        validateBeforeSave: false
-    })
-    res.status(200).json({
-        success: true,
-        message: 'Updated'
-    })
 })
 
 exports.deleteOrder = errorFunc(async (req, res, next) => {
@@ -124,7 +128,7 @@ exports.deleteOrder = errorFunc(async (req, res, next) => {
     if (!order) {
         return next(new ErrorHandler(`No order found with id ${req.params.id}`, 404));
     }
-    await order.remove()
+    await order.deleteOne()
 
     res.status(200).json({
         success: true,

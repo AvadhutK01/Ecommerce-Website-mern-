@@ -27,6 +27,15 @@ import Payment from './component/Cart/Payment.js';
 import OrderSuccess from './component/Cart/OrderSuccess.js';
 import MyOrders from './component/Order/MyOrder.js';
 import OrderDetails from './component/Order/OrderDetails.js';
+import Dashboard from './component/Admin/Dashboard.js';
+import UsersList from './component/Admin/UserList.js';
+import OrderList from './component/Admin/OrderList.js';
+import ProductList from './component/Admin/ProductList.js';
+import ProductReviews from './component/Admin/ProductReviews.js';
+import NewProduct from './component/Admin/NewProduct.js';
+import UpdateUser from './component/Admin/UpdateUser.js';
+import ProcessOrder from './component/Admin/ProcessOrder.js';
+import UpdateProduct from './component/Admin/UpdateProducts.js';
 
 function App() {
   const { isAuthenticated, user } = useSelector((state) => state.user);
@@ -39,8 +48,10 @@ function App() {
   }
 
   useEffect(() => {
-    store.dispatch(loadUser());
-    getRazorpayApiKey();
+    if (isAuthenticated) {
+      store.dispatch(loadUser());
+      getRazorpayApiKey();
+    }
   }, []);
   return (
     <Router>
@@ -117,6 +128,60 @@ function App() {
           path="/order/:id"
           element={<ProtectedRoute>
             <OrderDetails />
+          </ProtectedRoute>}
+        />
+        <Route
+          path="/admin/dashboard"
+          element={<ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>}
+        />
+        <Route
+          path="/admin/users"
+          element={<ProtectedRoute>
+            <UsersList />
+          </ProtectedRoute>}
+        />
+        <Route
+          path="/admin/orders"
+          element={<ProtectedRoute>
+            <OrderList />
+          </ProtectedRoute>}
+        />
+        <Route
+          path="/admin/products"
+          element={<ProtectedRoute>
+            <ProductList />
+          </ProtectedRoute>}
+        />
+        <Route
+          path="/admin/reviews"
+          element={<ProtectedRoute>
+            <ProductReviews />
+          </ProtectedRoute>}
+        />
+        <Route
+          path="/admin/product"
+          element={<ProtectedRoute>
+            <NewProduct />
+          </ProtectedRoute>}
+        />
+        <Route
+          path="/admin/user/:id"
+          element={<ProtectedRoute>
+            <UpdateUser />
+          </ProtectedRoute>}
+        />
+        <Route
+          path="/admin/order/:id"
+          element={<ProtectedRoute>
+            <ProcessOrder />
+          </ProtectedRoute>}
+        />
+        <Route
+          path="/admin/product/:id"
+          element={<ProtectedRoute>
+            <UpdateProduct />
           </ProtectedRoute>}
         />
       </Routes>

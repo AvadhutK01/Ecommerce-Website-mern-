@@ -5,11 +5,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearErrors, resetPassword } from "../../actions/userAction";
 import MetaData from "../layout/MetaData";
 import { Lock, LockOpen } from "@mui/icons-material";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
-const ResetPassword = ({ history, match }) => {
+const ResetPassword = ({ }) => {
     const dispatch = useDispatch();
     const Navigate = useNavigate();
+    const { token } = useParams();
 
     const { error, success, loading } = useSelector(
         (state) => state.forgotPassword
@@ -26,7 +27,7 @@ const ResetPassword = ({ history, match }) => {
         myForm.set("password", password);
         myForm.set("confirmPassword", confirmPassword);
 
-        dispatch(resetPassword(match.params.token, myForm));
+        dispatch(resetPassword(token, myForm));
     };
 
     useEffect(() => {
