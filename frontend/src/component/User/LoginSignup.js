@@ -8,6 +8,7 @@ import FaceIcon from "@mui/material/Icon";
 import { useDispatch, useSelector } from "react-redux";
 import { clearErrors, login, register } from "../../actions/userAction";
 import { useNavigate, useLocation } from 'react-router-dom';
+import profilePng from "../../images/Profile.png";
 
 const LoginSignUp = () => {
     const dispatch = useDispatch();
@@ -33,7 +34,7 @@ const LoginSignUp = () => {
 
     const { name, email, password } = user;
 
-    const [avatar, setAvatar] = useState("/Profile.png");
+    const [avatar, setAvatar] = useState(profilePng);
     const [avatarPreview, setAvatarPreview] = useState("/Profile.png");
 
     const loginSubmit = (e) => {

@@ -8,26 +8,53 @@ exports.newOrder = errorFunc(async (req, res, next) => {
 })
 //create new order
 exports.newOrder = errorFunc(async (req, res, next) => {
-    const { shippingInfo, orderItems, paymentInfo, itemsPrice, taxPrice, shippingPrice, totalPrice } = req.body;
-    const order = await Order.create({
+    const {
         shippingInfo,
         orderItems,
         paymentInfo,
         itemsPrice,
         taxPrice,
         shippingPrice,
+        totalPrice
+    } = req.body;
+
+    // Create an array to store the formatted order items
+    const formattedOrderItems = orderItems.map(item => ({
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image,
+        product: item.product,
+    }));
+
+    // Calculate the total items price
+    const calculatedItemsPrice = formattedOrderItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    // Create the order
+    const order = await Order.create({
+        shippingInfo,
+        orderItems: formattedOrderItems,
+        paymentInfo: {
+            id: paymentInfo.id.razorpay_payment_id,
+            status: paymentInfo.status
+        },
+        itemsPrice: calculatedItemsPrice,
+        taxPrice,
+        shippingPrice,
         totalPrice,
-        paidAT: Date.now(),
-        user: req.user._id
+        paidAt: new Date(),
+        user: req.user._id,
+        status: 'paid',
+        orderStatus: 'Processing',
     });
+
     res.status(201).json({
         success: true,
         order
-    })
+    });
 });
 
 exports.getSingleOrder = errorFunc(async (req, res, next) => {
-    const order = await Order.findById(req.param.id).populate('user', 'name email');
+    const order = await Order.findById(req.params.id).populate('user', 'name email');
     if (!order) {
         return next(new ErrorHandler(`No order found with id ${req.params.id}`, 404));
     }
@@ -38,7 +65,8 @@ exports.getSingleOrder = errorFunc(async (req, res, next) => {
 })
 
 exports.getUserOrder = errorFunc(async (req, res, next) => {
-    const orders = await Order.find({ user: req.query.id });
+    const orders = await Order.find({ user: req.user.id });
+    console.log(orders);
     if (!orders) {
         return next(new ErrorHandler(`No order found with id ${req.params.id}`, 404));
     }

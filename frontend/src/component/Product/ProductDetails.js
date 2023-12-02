@@ -7,6 +7,7 @@ import ReviewCard from "./ReviewCard.js";
 import {
     clearErrors,
     getProductDetails,
+    newReview
 } from "../../actions/productAction";
 import Loader from "../layout/Loader/Loader";
 import MetaData from "../layout/MetaData";
@@ -19,13 +20,20 @@ import {
     Button,
 } from "@mui/material";
 import { Rating } from "@mui/material";
+import { NEW_REVIEW_RESET } from "../../constants/productConstants.js";
 
 const ProductDetails = () => {
     const dispatch = useDispatch();
     const { id } = useParams();
+
     const { product, loading, error } = useSelector(
         (state) => state.productDetails
     );
+
+    const { success, error: reviewError } = useSelector(
+        (state) => state.newReview
+    );
+
     const options = {
         size: "large",
         value: product.ratings,
@@ -35,6 +43,8 @@ const ProductDetails = () => {
 
     const [quantity, setQuantity] = useState(1);
     const [open, setOpen] = useState(false);
+    const [rating, setRating] = useState(0);
+    const [comment, setComment] = useState("");
 
     const increaseQuantity = () => {
         if (product.Stock <= quantity) return;
@@ -54,10 +64,35 @@ const ProductDetails = () => {
         dispatch(addItemsToCart(id, quantity));
     };
 
+    const submitReviewToggle = () => {
+        open ? setOpen(false) : setOpen(true);
+    };
+
+    const reviewSubmitHandler = () => {
+        const myForm = new FormData();
+
+        myForm.set("rating", rating);
+        myForm.set("comment", comment);
+        myForm.set("productId", id);
+
+        dispatch(newReview(myForm));
+
+        setOpen(false);
+    };
+
     useEffect(() => {
         if (error) {
             dispatch(clearErrors());
         }
+
+        if (reviewError) {
+            dispatch(clearErrors());
+        }
+
+        if (success) {
+            dispatch({ type: NEW_REVIEW_RESET });
+        }
+
         dispatch(getProductDetails(id));
     }, [dispatch, id, error]);
 
@@ -72,7 +107,7 @@ const ProductDetails = () => {
                         <div>
                             <Carousel>
                                 {product.images &&
-                                    product.images.map((item, i) => (
+                                    product.image.map((item, i) => (
                                         <img
                                             className="CarouselImage"
                                             key={i}
@@ -123,7 +158,7 @@ const ProductDetails = () => {
                                 Description : <p>{product.description}</p>
                             </div>
 
-                            <button className="submitReview">
+                            <button onClick={submitReviewToggle} className="submitReview">
                                 Submit Review
                             </button>
                         </div>
@@ -134,24 +169,29 @@ const ProductDetails = () => {
                     <Dialog
                         aria-labelledby="simple-dialog-title"
                         open={open}
+                        onClose={submitReviewToggle}
                     >
                         <DialogTitle>Submit Review</DialogTitle>
                         <DialogContent className="submitDialog">
                             <Rating
+                                onChange={(e) => setRating(e.target.value)}
                                 size="large"
+                                value={rating}
                             />
 
                             <textarea
                                 className="submitDialogTextArea"
                                 cols="30"
                                 rows="5"
+                                value={comment}
+                                onChange={(e) => setComment(e.target.value)}
                             ></textarea>
                         </DialogContent>
                         <DialogActions>
-                            <Button color="secondary">
+                            <Button onClick={submitReviewToggle} color="secondary">
                                 Cancel
                             </Button>
-                            <Button color="primary">
+                            <Button onClick={reviewSubmitHandler} color="primary">
                                 Submit
                             </Button>
                         </DialogActions>

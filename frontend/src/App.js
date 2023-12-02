@@ -19,23 +19,35 @@ import UpdatePassword from './component/User/UpdatePassword.js';
 import ForgotPassword from './component/User/ForgotPassword.js';
 import ResetPassword from './component/User/ResetPassword.js';
 import Cart from './component/Cart/Cart.js';
-
-// App.js
-// ... (import statements)
+import Shipping from './component/Cart/Shipping.js';
+import ConfirmOrder from './component/Cart/ConfirmOrder.js';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import Payment from './component/Cart/Payment.js';
+import OrderSuccess from './component/Cart/OrderSuccess.js';
+import MyOrders from './component/Order/MyOrder.js';
+import OrderDetails from './component/Order/OrderDetails.js';
 
 function App() {
   const { isAuthenticated, user } = useSelector((state) => state.user);
 
-  React.useEffect(() => {
-    store.dispatch(loadUser());
-  }, []);
+  const [razorpayApiKey, setRazorpayApiKey] = useState("");
 
+  async function getRazorpayApiKey() {
+    const { data } = await axios.get("/api/v1/razorpayapikey");
+    setRazorpayApiKey(data.razorpayApiKey);
+  }
+
+  useEffect(() => {
+    store.dispatch(loadUser());
+    getRazorpayApiKey();
+  }, []);
   return (
     <Router>
       <Header />
 
       {isAuthenticated && <UserOptions user={user} />}
-      {!isAuthenticated && <LoginSignUp />}
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/product/:id" element={<ProductDetails />} />
@@ -67,6 +79,44 @@ function App() {
           path="/cart"
           element={<ProtectedRoute>
             <Cart />
+          </ProtectedRoute>}
+        />
+        <Route
+          path="/shipping"
+          element={<ProtectedRoute>
+            <Shipping />
+          </ProtectedRoute>}
+        />
+        <Route
+          path="/order/confirm"
+          element={<ProtectedRoute>
+            <ConfirmOrder />
+          </ProtectedRoute>}
+        />
+        {razorpayApiKey && (
+          <Route
+            path="/process/payment"
+            element={<ProtectedRoute>
+              <Payment razorpayApiKey={razorpayApiKey} />
+            </ProtectedRoute>}
+          />
+        )}
+        <Route
+          path="/success"
+          element={<ProtectedRoute>
+            <OrderSuccess />
+          </ProtectedRoute>}
+        />
+        <Route
+          path="/orders"
+          element={<ProtectedRoute>
+            <MyOrders />
+          </ProtectedRoute>}
+        />
+        <Route
+          path="/order/:id"
+          element={<ProtectedRoute>
+            <OrderDetails />
           </ProtectedRoute>}
         />
       </Routes>

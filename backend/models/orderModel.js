@@ -4,87 +4,104 @@ const orderSchema = new mongoose.Schema({
     shippingInfo: {
         address: {
             type: String,
-            required: [true, "Please provide your address"]
+            required: true,
         },
         city: {
             type: String,
-            required: [true, "Please enter your city"]
+            required: true,
         },
+
         state: {
             type: String,
-            required: [true, "Please enter your state"]
+            required: true,
         },
+
         country: {
             type: String,
-            required: [true, "Please enter your country"]
+            required: true,
         },
         pinCode: {
             type: Number,
-            required: [true, "Please enter your pinCode"]
+            required: true,
         },
         phoneNo: {
             type: Number,
-            required: [true, "Please enter your phoneNo"]
-        }
+            required: true,
+        },
     },
     orderItems: [
         {
-            name: { type: String },
-            price: { type: Number },
-            quantity: { type: Number },
-            image: { type: String },
+            name: {
+                type: String,
+                required: true,
+            },
+            price: {
+                type: Number,
+                required: true,
+            },
+            quantity: {
+                type: Number,
+                required: true,
+            },
+            image: {
+                type: String,
+                required: true,
+            },
             product: {
                 type: mongoose.Schema.ObjectId,
                 ref: "Product",
-            }
-        }
+                required: true,
+            },
+        },
     ],
     user: {
         type: mongoose.Schema.ObjectId,
-        ref: "User"
+        ref: "users",
+        required: true,
     },
     paymentInfo: {
         id: {
             type: String,
-            required: true
-        }
-    },
-    status: {
-        type: String,
-        required: true
+            required: true,
+        },
+        status: {
+            type: String,
+            required: true,
+        },
     },
     paidAt: {
         type: Date,
-        required: true
+        required: true,
     },
     itemsPrice: {
         type: Number,
+        required: true,
         default: 0,
-        required: true
     },
     taxPrice: {
         type: Number,
+        required: true,
         default: 0,
-        required: true
     },
     shippingPrice: {
         type: Number,
+        required: true,
         default: 0,
-        required: true
-    }, totalPrice: {
+    },
+    totalPrice: {
         type: Number,
+        required: true,
         default: 0,
-        required: true
     },
     orderStatus: {
         type: String,
         required: true,
-        default: "Processing"
+        default: "Processing",
     },
     deliveredAt: Date,
     createdAt: {
         type: Date,
-        default: new Date()
-    }
+        default: Date.now,
+    },
 })
 module.exports = mongoose.model('Orders', orderSchema); 

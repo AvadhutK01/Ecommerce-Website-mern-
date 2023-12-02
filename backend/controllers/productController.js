@@ -98,37 +98,42 @@ exports.deleteProduct = errorFunc(async (res, req) => {
 
 //Create new review or update the review
 exports.createReview = errorFunc(async (req, res) => {
-    const review = {
-        user: req.user._id,
-        name: req.user.name,
-        rating: Number(req.body.rating),
-        comment: req.body.comment
-    }
-    const product = await Product.findById(req.params.productId);
-    const isReviewed = product.reviews.find(rev => rev.user.toString() === req.user._id.toString());
-    if (isReviewed) {
-        product.reviews.forEach((review) => {
-            if (review.user.toString() === req.user._id.toString()) {
-                review.rating = Number(req.body.rating);
-                review.comment = req.body.comment;
-            }
+    try {
+        const review = {
+            user: req.user._id,
+            name: req.user.name,
+            rating: Number(req.body.rating),
+            comment: req.body.comment
+        }
+        const product = await Product.findById(req.body.productId);
+        const isReviewed = product.reviews.find(rev => rev.user.toString() === req.user._id.toString());
+        if (isReviewed) {
+            product.reviews.forEach((review) => {
+                if (review.user.toString() === req.user._id.toString()) {
+                    review.rating = Number(req.body.rating);
+                    review.comment = req.body.comment;
+                }
+            });
+        } else {
+            product.reviews.push(review);
+            product.numOfReviews = product.reviews.length
+        }
+        let avg = 0;
+        for (let i of product.reviews) {
+            avg += i.rating;
+        }
+        product.ratings = (avg / product.reviews.length).toFixed(1);
+        await product.save({
+            validateBeforeSave: false
         });
-    } else {
-        product.reviews.push(review);
-        product.numOfReviews = product.reviews.length
+        res.status(200).json({
+            success: true,
+            product
+        })
     }
-    let avg = 0;
-    for (let i of product.reviews) {
-        avg += i.rating;
+    catch (err) {
+        console.log(err);
     }
-    product.ratings = (avg / product.reviews.length).toFixed(1);
-    await product.save({
-        validateBeforeSave: false
-    });
-    res.status(200).json({
-        success: true,
-        product
-    })
 })
 
 exports.getProductReviews = errorFunc(async (req, res, next) => {

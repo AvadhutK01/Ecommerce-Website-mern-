@@ -37,7 +37,7 @@ const ResetPassword = ({ history, match }) => {
         if (success) {
             Navigate("/login");
         }
-    }, [dispatch, error, success]);
+    }, [dispatch, Navigate, error, success]);
 
     return (
         <Fragment>
