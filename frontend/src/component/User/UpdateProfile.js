@@ -7,6 +7,9 @@ import { clearErrors, updateProfile, loadUser } from "../../actions/userAction";
 import { UPDATE_PROFILE_RESET } from "../../constants/userConstants";
 import MetaData from "../layout/MetaData";
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const UpdateProfile = () => {
     const dispatch = useDispatch();
@@ -51,10 +54,13 @@ const UpdateProfile = () => {
         }
 
         if (error) {
+            toast.error(error);
             dispatch(clearErrors());
         }
 
         if (isUpdated) {
+
+            toast.success("Profile updated successfully");
             dispatch(loadUser());
 
             Navigate("/account");

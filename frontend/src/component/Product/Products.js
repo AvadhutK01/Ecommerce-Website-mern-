@@ -8,6 +8,9 @@ import Pagination from "react-js-pagination";
 import { Slider, Typography, Rating } from "@mui/material"
 import MetaData from "../layout/MetaData";
 import { useParams } from "react-router-dom";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const categories = [
     "Laptop",
@@ -50,6 +53,7 @@ const Products = () => {
 
     useEffect(() => {
         if (error) {
+            toast.error(error);
             dispatch(clearErrors());
         }
 

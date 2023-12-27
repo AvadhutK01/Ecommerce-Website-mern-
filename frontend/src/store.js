@@ -25,8 +25,16 @@ import {
     orderDetailsReducer,
     orderReducer,
 } from "./reducers/orderReducer";
+import { persistReducer, persistStore } from "redux-persist";
+import storage from "redux-persist/lib/storage"; // defaults to localStorage
 
-const reducer = combineReducers({
+const persistConfig = {
+    key: "root",
+    storage,
+    whitelist: ["user", "cart"], // specify which reducers to persist
+};
+
+const rootReducer = combineReducers({
     products: productsReducer,
     productDetails: productDetailsReducer,
     user: userReducer,
@@ -47,7 +55,16 @@ const reducer = combineReducers({
     product: productReducer,
 });
 
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+// Retrieve user authentication state from localStorage
+const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+
 let initialState = {
+    user: {
+        isAuthenticated,
+        // Add other user properties here if needed
+    },
     cart: {
         cartItems: localStorage.getItem("cartItems")
             ? JSON.parse(localStorage.getItem("cartItems"))
@@ -55,15 +72,17 @@ let initialState = {
         shippingInfo: localStorage.getItem("shippingInfo")
             ? JSON.parse(localStorage.getItem("shippingInfo"))
             : {},
-    }
+    },
 };
 
 const middleware = [thunk];
 
 const store = createStore(
-    reducer,
+    persistedReducer,
     initialState,
     composeWithDevTools(applyMiddleware(...middleware))
 );
 
-export default store;
+const persistor = persistStore(store);
+
+export { store, persistor };

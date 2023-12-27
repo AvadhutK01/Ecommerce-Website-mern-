@@ -21,6 +21,9 @@ import {
 } from "@mui/material";
 import { Rating } from "@mui/material";
 import { NEW_REVIEW_RESET } from "../../constants/productConstants.js";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const ProductDetails = () => {
     const dispatch = useDispatch();
@@ -82,14 +85,17 @@ const ProductDetails = () => {
 
     useEffect(() => {
         if (error) {
+            toast.error(error);
             dispatch(clearErrors());
         }
 
         if (reviewError) {
+            toast.error(reviewError);
             dispatch(clearErrors());
         }
 
         if (success) {
+            toast.success("Review submitted successfully");
             dispatch({ type: NEW_REVIEW_RESET });
         }
 

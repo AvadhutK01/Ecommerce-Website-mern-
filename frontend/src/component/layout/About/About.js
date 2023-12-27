@@ -21,7 +21,7 @@ const About = () => {
                             src=""
                             alt="Founder"
                         />
-                        <Header>Abhishek Singh</Header>
+                        <Header>Avadhut Kelaskar</Header>
                         <Button onClick={visitInstagram} color="primary">
                             Visit Instagram
                         </Button>

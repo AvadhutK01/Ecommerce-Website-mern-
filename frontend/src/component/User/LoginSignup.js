@@ -9,6 +9,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearErrors, login, register } from "../../actions/userAction";
 import { useNavigate, useLocation } from 'react-router-dom';
 import profilePng from "../../images/Profile.png";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const LoginSignUp = () => {
     const dispatch = useDispatch();
@@ -71,11 +73,12 @@ const LoginSignUp = () => {
         }
     };
 
-    const redirect = location.search ? new URLSearchParams(location.search).get('redirect') : '/account';
+    const redirect = location.search ? new URLSearchParams(location.search).get('redirect') : '/';
 
 
     useEffect(() => {
         if (error) {
+            toast.error(error);
             dispatch(clearErrors());
         }
 

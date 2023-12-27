@@ -6,6 +6,9 @@ import { Link, useParams } from "react-router-dom";
 import { Typography } from "@mui/material";
 import { getOrderDetails, clearErrors } from "../../actions/orderAction";
 import Loader from "../layout/Loader/Loader";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const OrderDetails = () => {
     const { id } = useParams();
@@ -14,6 +17,7 @@ const OrderDetails = () => {
 
     useEffect(() => {
         if (error) {
+            toast.error(error);
             dispatch(clearErrors());
         }
 

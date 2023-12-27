@@ -6,6 +6,9 @@ import { clearErrors, resetPassword } from "../../actions/userAction";
 import MetaData from "../layout/MetaData";
 import { Lock, LockOpen } from "@mui/icons-material";
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const ResetPassword = ({ }) => {
     const dispatch = useDispatch();
@@ -32,10 +35,12 @@ const ResetPassword = ({ }) => {
 
     useEffect(() => {
         if (error) {
+            toast.error(error);
             dispatch(clearErrors());
         }
 
         if (success) {
+            toast.success(success);
             Navigate("/login");
         }
     }, [dispatch, Navigate, error, success]);

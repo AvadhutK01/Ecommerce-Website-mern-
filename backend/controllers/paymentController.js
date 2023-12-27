@@ -2,6 +2,7 @@ const catchError = require("../middlewares/catchErrors");
 const Razorpay = require("razorpay");
 const shortid = require("shortid");
 require('dotenv').config();
+const ErrorHandler = require('../util/errorHandler');
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAYKEYID,
@@ -33,6 +34,7 @@ exports.processPayment = catchError(async (req, res, next) => {
     }
     catch (err) {
         console.log(err);
+        return next(new ErrorHandler('Internal server error!', 500));
     }
 });
 

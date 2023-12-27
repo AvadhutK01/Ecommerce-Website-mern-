@@ -7,6 +7,8 @@ import { UPDATE_PASSWORD_RESET } from "../../constants/userConstants";
 import MetaData from "../layout/MetaData";
 import { VpnKey, Lock, LockOpen } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const UpdatePassword = () => {
     const dispatch = useDispatch();
@@ -32,11 +34,13 @@ const UpdatePassword = () => {
 
     useEffect(() => {
         if (error) {
+            toast.error(error);
             dispatch(clearErrors());
         }
 
         if (isUpdated) {
 
+            toast.success("Password updated successfully");
             Navigate("/account");
 
             dispatch({

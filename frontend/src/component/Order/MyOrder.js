@@ -8,6 +8,9 @@ import { Link } from "react-router-dom";
 import { Typography } from "@mui/material";
 import MetaData from "../layout/MetaData";
 import { Launch } from "@mui/icons-material";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const MyOrders = () => {
     const dispatch = useDispatch();
@@ -78,6 +81,7 @@ const MyOrders = () => {
 
     useEffect(() => {
         if (error) {
+            toast.error(error);
             dispatch(clearErrors());
         }
 

@@ -15,7 +15,9 @@ exports.registerUser = catchErrors(async (req, res, next) => {
             crop: 'scale'
         })
         const { name, email, password } = req.body;
-
+        if (!name || !email || !password) {
+            return next(new ErrorHandler("Please provide all the required fields", 400))
+        }
         const user = await User.create({
             name: name,
             email: email,
@@ -30,6 +32,10 @@ exports.registerUser = catchErrors(async (req, res, next) => {
     }
     catch (Err) {
         console.log(Err);
+        if (Err.code === 11000) {
+            return next(new ErrorHandler("User already exist please login", 400));
+        }
+        return next(new ErrorHandler("Internal server error!", 500));
     }
 })
 
@@ -46,7 +52,7 @@ exports.loginUser = catchErrors(async (req, res, next) => {
         const user = await User.findOne({ email: email }).select('+password');
 
         if (!user) {
-            return next(new ErrorHandler("Invalid credentials", 403));
+            return next(new ErrorHandler("User not exist please register yourself first", 404));
         }
         const isPasswordMatched = user.comparePassword(password);
         if (!isPasswordMatched) {
@@ -56,6 +62,7 @@ exports.loginUser = catchErrors(async (req, res, next) => {
         sendToken(user, 200, res)
     } catch (error) {
         console.log(error);
+        return next(new ErrorHandler("Internal server error!", 500));
     }
 
 })
@@ -78,7 +85,7 @@ exports.logout = catchErrors(async (req, res, next) => {
 exports.forgetPassword = catchErrors(async (req, res, next) => {
     try {
         console.log("object");
-        const user = await User.findOne({ email: req.body.email });
+        var user = await User.findOne({ email: req.body.email });
         if (!user) {
             return next(new ErrorHandler(`No account associated with ${req.body.email}`, 404))
         }
@@ -116,14 +123,14 @@ exports.forgetPassword = catchErrors(async (req, res, next) => {
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
         await user.save({ validateBeforeSave: false });
-        return next(new ErrorHandler(error.message, 500));
+        return next(new ErrorHandler('Internal server error!', 500));
     }
 });
 
 //Reset Password
 exports.resetPassword = catchErrors(async (req, res, next) => {
     try {
-        //Get hashed token from url
+        //Getting hashed token from url
         const resetPasswordToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
         const user = await User.findOne({
             resetPasswordToken,
@@ -143,6 +150,7 @@ exports.resetPassword = catchErrors(async (req, res, next) => {
         sendToken(user, 200, res);
     } catch (err) {
         console.log(err);
+        return next(new ErrorHandler('Internal server error!', 500));
     }
 }
 
@@ -161,6 +169,7 @@ exports.getUserDetails = catchErrors(async (req, res, next) => {
         })
     } catch (error) {
         console.log(error);
+        return next(new ErrorHandler('Internal server error!', 500));
     }
 })
 
@@ -187,87 +196,121 @@ exports.updateUserPassword = catchErrors(async (req, res, next) => {
     }
     catch (Err) {
         console.log(Err);
+        return next(new ErrorHandler('Internal server error!', 500));
     }
 })
 
 
 //update user details
 exports.updateUserDetails = catchErrors(async (req, res, next) => {
-    const newUserData = {
-        name: req.body.name,
-        email: req.body.email,
-    };
+    try {
+        const newUserData = {
+            name: req.body.name,
+            email: req.body.email,
+        };
 
-    if (req.body.avatar !== "") {
-        const user = await User.findById(req.user.id);
+        if (req.body.avatar !== "") {
+            const user = await User.findById(req.user.id);
 
-        const imageId = user.avatar.public_id;
+            const imageId = user.avatar.public_id;
 
-        await cloudinary.v2.uploader.destroy(imageId);
+            await cloudinary.v2.uploader.destroy(imageId);
 
-        const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
-            folder: "avatars",
-            width: 150,
-            crop: "scale",
+            const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
+                folder: "avatars",
+                width: 150,
+                crop: "scale",
+            });
+
+            newUserData.avatar = {
+                public_id: myCloud.public_id,
+                url: myCloud.secure_url,
+            };
+        }
+
+        const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
+            new: true,
+            runValidators: true,
+            useFindAndModify: false,
         });
 
-        newUserData.avatar = {
-            public_id: myCloud.public_id,
-            url: myCloud.secure_url,
-        };
+        res.status(200).json({
+            success: true,
+        });
+    } catch (err) {
+        console.log(err);
+        return next(new ErrorHandler('Internal server error!', 500));
     }
-
-    const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
-        new: true,
-        runValidators: true,
-        useFindAndModify: false,
-    });
-
-    res.status(200).json({
-        success: true,
-    });
 })
 
+//Get all users
 exports.getAllUser = catchErrors(async (req, res, next) => {
-    const users = await User.find();
-    if (!users) {
-        return next(new ErrorHandler(`There is no users`, 404))
+    try {
+        const users = await User.find();
+        if (!users) {
+            return next(new ErrorHandler(`There is no users`, 404))
+        }
+        res.status(200).json({
+            success: true,
+            users
+        })
     }
-    res.status(200).json({
-        success: true,
-        users
-    })
+    catch (error) {
+        console.log(error);
+        return next(new ErrorHandler('Internal server error!', 500));
+    }
 })
 
+//Getting single user
 exports.getSingleUser = catchErrors(async (req, res, next) => {
-    const user = await User.findById(req.params.id)
-    res.status(200).json({
-        success: true,
-        user
-    })
-})
-
-exports.updateUserRole = catchErrors(async (req, res, next) => {
-    const Data = {
-        role: req.body.role
+    try {
+        const user = await User.findById(req.params.id)
+        res.status(200).json({
+            success: true,
+            user
+        })
     }
-
-    const user = await User.findByIdAndUpdate(req.params.id, Data, {
-        new: true,
-        runValidators: true,
-        useFindAndModify: false
-    })
-
-    res.status(200).json({
-        success: true,
-        user
-    })
+    catch (error) {
+        console.log(error);
+        return next(new ErrorHandler('Internal server error!', 500));
+    }
 })
 
+//Update user role to admin or user
+exports.updateUserRole = catchErrors(async (req, res, next) => {
+    try {
+        const Data = {
+            role: req.body.role
+        }
+
+        const user = await User.findByIdAndUpdate(req.params.id, Data, {
+            new: true,
+            runValidators: true,
+            useFindAndModify: false
+        })
+
+        res.status(200).json({
+            success: true,
+            user
+        })
+    }
+    catch (error) {
+        console.log(error);
+        return next(new ErrorHandler('Internal server error!', 500));
+    }
+})
+
+//Delete user
 exports.deleteUser = catchErrors(async (req, res, next) => {
-    const user = await User.deleteOne({ _id: req.params.id });
-    res.status(200).json({
-        success: true,
-        message: "Deleted Successfully"
-    });
+    try {
+        const user = await User.deleteOne({ _id: req.params.id });
+        res.status(200).json({
+            success: true,
+            message: "Deleted Successfully"
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return next(new ErrorHandler('Internal server error!', 500));
+    }
 })

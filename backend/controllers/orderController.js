@@ -3,94 +3,115 @@ const Product = require('../models/productModel');
 const ErrorHandler = require('../util/errorHandler');
 const errorFunc = require('../middlewares/catchErrors');
 
-exports.newOrder = errorFunc(async (req, res, next) => {
-
-})
 //create new order
 exports.newOrder = errorFunc(async (req, res, next) => {
-    const {
-        shippingInfo,
-        orderItems,
-        paymentInfo,
-        itemsPrice,
-        taxPrice,
-        shippingPrice,
-        totalPrice
-    } = req.body;
+    try {
+        const {
+            shippingInfo,
+            orderItems,
+            paymentInfo,
+            itemsPrice,
+            taxPrice,
+            shippingPrice,
+            totalPrice
+        } = req.body;
 
-    // Create an array to store the formatted order items
-    const formattedOrderItems = orderItems.map(item => ({
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        image: item.image,
-        product: item.product,
-    }));
+        // Create an array to store the formatted order items
+        const formattedOrderItems = orderItems.map(item => ({
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+            product: item.product,
+        }));
 
-    // Calculate the total items price
-    const calculatedItemsPrice = formattedOrderItems.reduce((total, item) => total + item.price * item.quantity, 0);
-    // Create the order
-    const order = await Order.create({
-        shippingInfo,
-        orderItems: formattedOrderItems,
-        paymentInfo: {
-            id: paymentInfo.id.razorpay_payment_id,
-            status: paymentInfo.status
-        },
-        itemsPrice: calculatedItemsPrice,
-        taxPrice,
-        shippingPrice,
-        totalPrice,
-        paidAt: new Date(),
-        user: req.user._id,
-        status: 'paid',
-        orderStatus: 'Processing',
-    });
+        // Calculate the total items price
+        const calculatedItemsPrice = formattedOrderItems.reduce((total, item) => total + item.price * item.quantity, 0);
+        // Create the order
+        const order = await Order.create({
+            shippingInfo,
+            orderItems: formattedOrderItems,
+            paymentInfo: {
+                id: paymentInfo.id.razorpay_payment_id,
+                status: paymentInfo.status
+            },
+            itemsPrice: calculatedItemsPrice,
+            taxPrice,
+            shippingPrice,
+            totalPrice,
+            paidAt: new Date(),
+            user: req.user._id,
+            status: 'paid',
+            orderStatus: 'Processing',
+        });
 
-    res.status(201).json({
-        success: true,
-        order
-    });
+        res.status(201).json({
+            success: true,
+            order
+        });
+    }
+    catch (err) {
+        console.log(err);
+        return next(new ErrorHandler('Internal server error!', 500));
+    }
+
 });
 
 exports.getSingleOrder = errorFunc(async (req, res, next) => {
-    const order = await Order.findById(req.params.id).populate('user', 'name email');
-    if (!order) {
-        return next(new ErrorHandler(`No order found with id ${req.params.id}`, 404));
+    try {
+        const order = await Order.findById(req.params.id).populate('user', 'name email');
+        if (!order) {
+            return next(new ErrorHandler(`No order found with id ${req.params.id}`, 404));
+        }
+        res.status(200).json({
+            success: true,
+            order
+        })
     }
-    res.status(200).json({
-        success: true,
-        order
-    })
+    catch (err) {
+        console.log(err);
+        return next(new ErrorHandler('Internal server error!', 500));
+    }
 })
 
 exports.getUserOrder = errorFunc(async (req, res, next) => {
-    const orders = await Order.find({ user: req.user.id });
-    console.log(orders);
-    if (!orders) {
-        return next(new ErrorHandler(`No order found with id ${req.params.id}`, 404));
+    try {
+        const orders = await Order.find({ user: req.user.id });
+        console.log(orders);
+        if (!orders) {
+            return next(new ErrorHandler(`No order found with id ${req.params.id}`, 404));
+        }
+        res.status(200).json({
+            success: true,
+            orders
+        })
+    } catch (error) {
+        console.log(error);
+        return next(new ErrorHandler('Internal server error!', 500));
     }
-    res.status(200).json({
-        success: true,
-        orders
-    })
 })
 
 exports.getAllOrder = errorFunc(async (req, res, next) => {
-    const orders = await Order.find();
-    if (!orders) {
-        return next(new ErrorHandler(`No order found with id ${req.params.id}`, 404));
-    }
-    let totalAmount = 0;
-    orders.forEach(order => {
-        totalAmount += order.totalPrice
-    });
+    try {
+        const orders = await Order.find();
+        if (!orders) {
+            return next(new ErrorHandler(`No order found with id ${req.params.id}`, 404));
+        }
+        let totalAmount = 0;
+        orders.forEach(order => {
+            totalAmount += order.totalPrice
+        });
 
-    res.status(200).json({
-        success: true,
-        totalAmount,
-        orders
-    })
+        res.status(200).json({
+            success: true,
+            totalAmount,
+            orders
+        })
+    }
+    catch (err) {
+        console.log(err);
+        return next(new ErrorHandler('Internal server error!', 500));
+    }
 })
 
 exports.updateOrderStatus = errorFunc(async (req, res, next) => {
@@ -120,28 +141,41 @@ exports.updateOrderStatus = errorFunc(async (req, res, next) => {
         })
     } catch (err) {
         console.log(err);
+        return next(new ErrorHandler('Internal server error!', 500));
     }
 })
 
 exports.deleteOrder = errorFunc(async (req, res, next) => {
-    const order = await Order.findById(req.params.id);
-    if (!order) {
-        return next(new ErrorHandler(`No order found with id ${req.params.id}`, 404));
-    }
-    await order.deleteOne()
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return next(new ErrorHandler(`No order found with id ${req.params.id}`, 404));
+        }
+        await order.deleteOne()
 
-    res.status(200).json({
-        success: true,
-        message: 'deleted'
-    })
+        res.status(200).json({
+            success: true,
+            message: 'deleted'
+        })
+    }
+    catch (err) {
+        console.log(err);
+        return next(new ErrorHandler('Internal server error!', 500));
+    }
 })
 
 async function updateStocks(id, quantity) {
-    const product = await Product.findById(id);
+    try {
+        const product = await Product.findById(id);
 
-    product.Stock -= quantity;
+        product.Stock -= quantity;
 
-    await product.save({
-        validateBeforeSave: false
-    })
+        await product.save({
+            validateBeforeSave: false
+        })
+    }
+    catch (err) {
+        console.log(err);
+        return next(new ErrorHandler('Internal server error!', 500));
+    }
 }

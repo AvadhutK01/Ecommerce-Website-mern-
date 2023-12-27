@@ -6,8 +6,7 @@ import Search from './component/Product/Search.js';
 import LoginSignUp from './component/User/LoginSignup.js';
 import Footer from './component/layout/Footer/Footer.js';
 import Header from './component/layout/Header/Header.js';
-import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
-import store from './store.js'
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { loadUser } from './actions/userAction.js';
 import React from 'react';
 import { useSelector } from 'react-redux';
@@ -21,8 +20,7 @@ import ResetPassword from './component/User/ResetPassword.js';
 import Cart from './component/Cart/Cart.js';
 import Shipping from './component/Cart/Shipping.js';
 import ConfirmOrder from './component/Cart/ConfirmOrder.js';
-import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Payment from './component/Cart/Payment.js';
 import OrderSuccess from './component/Cart/OrderSuccess.js';
 import MyOrders from './component/Order/MyOrder.js';
@@ -36,25 +34,26 @@ import NewProduct from './component/Admin/NewProduct.js';
 import UpdateUser from './component/Admin/UpdateUser.js';
 import ProcessOrder from './component/Admin/ProcessOrder.js';
 import UpdateProduct from './component/Admin/UpdateProducts.js';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import NotFound from './component/layout/Not Found/NotFound.js';
+import AdminRoute from './component/Routes/AdminRoute.js';
+import { PersistGate } from 'redux-persist/integration/react';
+import { store } from './store';
+import About from './component/layout/About/About.js';
 
 function App() {
-  const { isAuthenticated, user } = useSelector((state) => state.user);
-
-  const [razorpayApiKey, setRazorpayApiKey] = useState("");
-
-  async function getRazorpayApiKey() {
-    const { data } = await axios.get("/api/v1/razorpayapikey");
-    setRazorpayApiKey(data.razorpayApiKey);
-  }
+  const { user, isAuthenticated } = useSelector((state) => state.user);
 
   useEffect(() => {
     if (isAuthenticated) {
       store.dispatch(loadUser());
-      getRazorpayApiKey();
     }
   }, []);
+
   return (
     <Router>
+      <ToastContainer />
       <Header />
 
       {isAuthenticated && <UserOptions user={user} />}
@@ -66,6 +65,7 @@ function App() {
         <Route path="/products/:keyword" element={<Products />} />
         <Route path="/search" element={<Search />} />
         <Route path="/login" element={<LoginSignUp />} />
+        <Route path="/about" element={<About />} />
         <Route
           path="/account"
           element={<ProtectedRoute>
@@ -104,14 +104,12 @@ function App() {
             <ConfirmOrder />
           </ProtectedRoute>}
         />
-        {razorpayApiKey && (
-          <Route
-            path="/process/payment"
-            element={<ProtectedRoute>
-              <Payment razorpayApiKey={razorpayApiKey} />
-            </ProtectedRoute>}
-          />
-        )}
+        <Route
+          path="/process/payment"
+          element={<ProtectedRoute>
+            <Payment />
+          </ProtectedRoute>}
+        />
         <Route
           path="/success"
           element={<ProtectedRoute>
@@ -132,58 +130,57 @@ function App() {
         />
         <Route
           path="/admin/dashboard"
-          element={<ProtectedRoute>
+          element={<AdminRoute>
             <Dashboard />
-          </ProtectedRoute>}
+          </AdminRoute>}
         />
         <Route
           path="/admin/users"
-          element={<ProtectedRoute>
-            <UsersList />
-          </ProtectedRoute>}
+          element={<AdminRoute element={<UsersList />} />}
         />
         <Route
           path="/admin/orders"
-          element={<ProtectedRoute>
+          element={<AdminRoute>
             <OrderList />
-          </ProtectedRoute>}
+          </AdminRoute>}
         />
         <Route
           path="/admin/products"
-          element={<ProtectedRoute>
+          element={<AdminRoute>
             <ProductList />
-          </ProtectedRoute>}
+          </AdminRoute>}
         />
         <Route
           path="/admin/reviews"
-          element={<ProtectedRoute>
+          element={<AdminRoute>
             <ProductReviews />
-          </ProtectedRoute>}
+          </AdminRoute>}
         />
         <Route
           path="/admin/product"
-          element={<ProtectedRoute>
+          element={<AdminRoute>
             <NewProduct />
-          </ProtectedRoute>}
+          </AdminRoute>}
         />
         <Route
           path="/admin/user/:id"
-          element={<ProtectedRoute>
+          element={<AdminRoute>
             <UpdateUser />
-          </ProtectedRoute>}
+          </AdminRoute>}
         />
         <Route
           path="/admin/order/:id"
-          element={<ProtectedRoute>
+          element={<AdminRoute>
             <ProcessOrder />
-          </ProtectedRoute>}
+          </AdminRoute>}
         />
         <Route
           path="/admin/product/:id"
-          element={<ProtectedRoute>
+          element={<AdminRoute>
             <UpdateProduct />
-          </ProtectedRoute>}
+          </AdminRoute>}
         />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
     </Router>

@@ -40,6 +40,7 @@ exports.createProduct = errorFunc(async (req, res, next) => {
     }
     catch (err) {
         console.log(err);
+        return next(new ErrorHandler('Internal server error!', 500));
     }
 });
 
@@ -60,32 +61,44 @@ exports.getAllProducts = errorFunc(async (req, res) => {
         });
     } catch (error) {
         console.log(error);
+        return next(new ErrorHandler('Internal server error!', 500));
     }
 });
 
 // Get all products --admin
 exports.getAdminProducts = errorFunc(async (req, res, next) => {
-    const products = await Product.find();
+    try {
+        const products = await Product.find();
 
-    res.status(200).json({
-        success: true,
-        products,
-    });
+        res.status(200).json({
+            success: true,
+            products,
+        });
+    }
+    catch (Err) {
+        console.log(Err);
+        return next(new ErrorHandler('Internal server error!', 500));
+    }
 });
 
 //Get single Product
 exports.getProductDetails = errorFunc(async (req, res, next) => {
+    try {
+        const product = await Product.findById(req.params.id);
 
-    const product = await Product.findById(req.params.id);
+        if (!product) {
+            return next(new ErrorHandler('Product not found', 404))
+        }
 
-    if (!product) {
-        return next(new ErrorHandler('Product not found', 404))
+        res.status(200).json({
+            success: true,
+            product
+        })
     }
-
-    res.status(200).json({
-        success: true,
-        product
-    })
+    catch (Err) {
+        console.log(Err);
+        return next(new ErrorHandler('Internal server error!', 500));
+    }
 })
 
 //update Products --Admin
@@ -139,28 +152,35 @@ exports.updateProduct = errorFunc(async (req, res) => {
         });
     } catch (Err) {
         console.log(Err);
+        return next(new ErrorHandler('Internal server error!', 500));
     }
 })
 
 // Delete Product --admin
 exports.deleteProduct = errorFunc(async (req, res, next) => {
-    const product = await Product.findById(req.params.id);
+    try {
+        const product = await Product.findById(req.params.id);
 
-    if (!product) {
-        return next(new ErrorHandler("Product not found", 404));
+        if (!product) {
+            return next(new ErrorHandler("Product not found", 404));
+        }
+
+        // Deleting Images From Cloudinary
+        for (let i = 0; i < product.images.length; i++) {
+            await cloudinary.v2.uploader.destroy(product.images[i].public_id);
+        }
+
+        await product.deleteOne();
+
+        res.status(200).json({
+            success: true,
+            message: "Product Delete Successfully",
+        });
     }
-
-    // Deleting Images From Cloudinary
-    for (let i = 0; i < product.images.length; i++) {
-        await cloudinary.v2.uploader.destroy(product.images[i].public_id);
+    catch (Err) {
+        console.log(Err);
+        return next(new ErrorHandler('Internal server error!', 500));
     }
-
-    await product.deleteOne();
-
-    res.status(200).json({
-        success: true,
-        message: "Product Delete Successfully",
-    });
 });
 
 //Create new review or update the review
@@ -200,44 +220,59 @@ exports.createReview = errorFunc(async (req, res) => {
     }
     catch (err) {
         console.log(err);
+        return next(new ErrorHandler('Internal server error!', 500));
     }
 })
 
+//Get product reviews
 exports.getProductReviews = errorFunc(async (req, res, next) => {
-    const product = await Product.findById(req.query.id);
-    if (!product) {
-        return next(new ErrorResponse('No product found with that id', 404));
+    try {
+        const product = await Product.findById(req.query.id);
+        if (!product) {
+            return next(new ErrorResponse('No product found with that id', 404));
+        }
+        res.status(200).json({
+            success: true,
+            reviews: product.reviews
+        })
     }
-    res.status(200).json({
-        success: true,
-        reviews: product.reviews
-    })
+    catch (Err) {
+        console.log(Err);
+        return next(new ErrorHandler('Internal server error!', 500));
+    }
 });
 
+//Deleting user reviews
 exports.deleteReview = errorFunc(async (req, res, next) => {
-    const product = await Product.findByIdAndUpdate(req.query.id);
-    if (!product) {
-        return next(new ErrorResponse("No product found", 404))
-    }
-    const reviews = product.reviews.filter(rev => rev._id.toString() !== req.query.id.tosTring());
-    let avg = 0;
-    for (let i of reviews) {
-        avg += i.rating;
-    }
-    const ratings = (avg / reviews.length).toFixed(1);
+    try {
+        const product = await Product.findByIdAndUpdate(req.query.id);
+        if (!product) {
+            return next(new ErrorResponse("No product found", 404))
+        }
+        const reviews = product.reviews.filter(rev => rev._id.toString() !== req.query.id.tosTring());
+        let avg = 0;
+        for (let i of reviews) {
+            avg += i.rating;
+        }
+        const ratings = (avg / reviews.length).toFixed(1);
 
-    const numOfReviews = reviews.length;
+        const numOfReviews = reviews.length;
 
-    await product.findByIdAndUpdate(req.query.productId, {
-        reviews,
-        ratings,
-        numOfReviews
-    }, {
-        new: true,
-        runValidators: true,
-        useFindAndModify: false
-    })
-    res.status(200).json({
-        success: true
-    })
+        await product.findByIdAndUpdate(req.query.productId, {
+            reviews,
+            ratings,
+            numOfReviews
+        }, {
+            new: true,
+            runValidators: true,
+            useFindAndModify: false
+        })
+        res.status(200).json({
+            success: true
+        })
+    }
+    catch (Err) {
+        console.log(Err);
+        return next(new ErrorHandler('Internal server error!', 500));
+    }
 })
