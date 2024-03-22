@@ -47,11 +47,11 @@ const LoginSignUp = () => {
     const registerSubmit = (e) => {
         e.preventDefault();
         if (!avatar || !name || !email || !password) {
-            return toast.warn('All values are required');
+            return toast.warninging('All values are required');
         }
 
         if (password.length < 8) {
-            return toast.warning('Password must be greater than 8 characters');
+            return toast.warninging('Password must be greater than 8 characters');
         }
         const myForm = new FormData();
 

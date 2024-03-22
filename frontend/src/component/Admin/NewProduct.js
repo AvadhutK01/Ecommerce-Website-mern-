@@ -56,7 +56,7 @@ const NewProduct = () => {
         e.preventDefault();
         if (!name || !price || !description || !category || !Stock || images.length <= 0) {
             {
-                return toast.warn('All values are required');
+                return toast.warning('All values are required');
             }
         }
 

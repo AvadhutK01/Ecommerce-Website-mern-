@@ -25,10 +25,10 @@ const ResetPassword = () => {
     const resetPasswordSubmit = (e) => {
         e.preventDefault();
         if (password.length < 8) {
-            return toast.warning('Password must be greater than 8 characters');
+            return toast.warninging('Password must be greater than 8 characters');
         }
         if (password !== confirmPassword) {
-            return toast.warning('Password and confirm password must be equal');
+            return toast.warninging('Password and confirm password must be equal');
         }
         const myForm = new FormData();
 

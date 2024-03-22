@@ -75,7 +75,7 @@ const ProductDetails = () => {
 
     const reviewSubmitHandler = () => {
         if (!rating || !comment || !id) {
-            return toast.warn("All values are required")
+            return toast.warning("All values are required")
         }
         const myForm = new FormData();
 
