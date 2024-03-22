@@ -15,6 +15,7 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import SideBar from "./Sidebar";
 import { UPDATE_PRODUCT_RESET } from "../../constants/productConstants";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const UpdateProduct = () => {
     const dispatch = useDispatch();
@@ -62,14 +63,17 @@ const UpdateProduct = () => {
             setOldImages(product.images);
         }
         if (error) {
+            toast.error(error);
             dispatch(clearErrors());
         }
 
         if (updateError) {
+            toast.error(updateError);
             dispatch(clearErrors());
         }
 
         if (isUpdated) {
+            toast.success("Product updated successfully");
             Navigate("/admin/products");
             dispatch({ type: UPDATE_PRODUCT_RESET });
         }
@@ -87,6 +91,11 @@ const UpdateProduct = () => {
     const updateProductSubmitHandler = (e) => {
         e.preventDefault();
 
+        if (!name || !price || !description || !category || !Stock || images.length <= 0) {
+            {
+                return toast.warn('All values are required');
+            }
+        }
         const myForm = new FormData();
 
         myForm.set("name", name);

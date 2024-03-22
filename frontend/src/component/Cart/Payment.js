@@ -8,6 +8,7 @@ import { createOrder, clearErrors } from "../../actions/orderAction";
 import useRazorpay from "react-razorpay";
 import { useNavigate } from "react-router-dom"
 import "./Payment.css";
+import { toast } from "react-toastify";
 
 const Payment = () => {
     const orderInfo = JSON.parse(sessionStorage.getItem("orderInfo"));
@@ -46,7 +47,7 @@ const Payment = () => {
                 };
 
                 dispatch(createOrder(order));
-
+                toast.success("Payment successful");
                 Navigate("/success");
             };
 
@@ -73,6 +74,7 @@ const Payment = () => {
 
     useEffect(() => {
         if (error) {
+            toast.error(error);
             dispatch(clearErrors());
         }
     }, [dispatch, error]);

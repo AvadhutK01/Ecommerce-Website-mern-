@@ -10,7 +10,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 
-const ResetPassword = ({ }) => {
+const ResetPassword = () => {
     const dispatch = useDispatch();
     const Navigate = useNavigate();
     const { token } = useParams();
@@ -24,7 +24,12 @@ const ResetPassword = ({ }) => {
 
     const resetPasswordSubmit = (e) => {
         e.preventDefault();
-
+        if (password.length < 8) {
+            return toast.warning('Password must be greater than 8 characters');
+        }
+        if (password !== confirmPassword) {
+            return toast.warning('Password and confirm password must be equal');
+        }
         const myForm = new FormData();
 
         myForm.set("password", password);
@@ -40,7 +45,7 @@ const ResetPassword = ({ }) => {
         }
 
         if (success) {
-            toast.success(success);
+            toast.success("Password updated successfully!");
             Navigate("/login");
         }
     }, [dispatch, Navigate, error, success]);

@@ -1,6 +1,6 @@
-import { createStore, combineReducers, applyMiddleware } from "redux";
-import thunk from "redux-thunk";
-import { composeWithDevTools } from "redux-devtools-extension";
+import { createStore, combineReducers, applyMiddleware, compose } from "redux";
+import { thunk } from "redux-thunk";
+
 import {
     newProductReducer,
     newReviewReducer,
@@ -26,12 +26,12 @@ import {
     orderReducer,
 } from "./reducers/orderReducer";
 import { persistReducer, persistStore } from "redux-persist";
-import storage from "redux-persist/lib/storage"; // defaults to localStorage
+import storage from "redux-persist/lib/storage";
 
 const persistConfig = {
     key: "root",
     storage,
-    whitelist: ["user", "cart"], // specify which reducers to persist
+    whitelist: ["user"],
 };
 
 const rootReducer = combineReducers({
@@ -62,8 +62,7 @@ const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
 
 let initialState = {
     user: {
-        isAuthenticated,
-        // Add other user properties here if needed
+        isAuthenticated
     },
     cart: {
         cartItems: localStorage.getItem("cartItems")
@@ -80,7 +79,9 @@ const middleware = [thunk];
 const store = createStore(
     persistedReducer,
     initialState,
-    composeWithDevTools(applyMiddleware(...middleware))
+    compose(
+        applyMiddleware(...middleware)
+    )
 );
 
 const persistor = persistStore(store);

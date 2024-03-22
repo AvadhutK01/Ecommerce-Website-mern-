@@ -5,7 +5,6 @@ const sendToken = require('../util/jwtToken')
 var SibApiV3Sdk = require('sib-api-v3-sdk');
 const cloudinary = require('cloudinary');
 const crypto = require('crypto');
-
 //Register user
 exports.registerUser = catchErrors(async (req, res, next) => {
     try {
@@ -35,6 +34,9 @@ exports.registerUser = catchErrors(async (req, res, next) => {
         if (Err.code === 11000) {
             return next(new ErrorHandler("User already exist please login", 400));
         }
+        if (Err && Err.message && err.message.includes("Could not decode base64")) {
+            return next(new ErrorHandler('Unsupported image format', 400));
+        }
         return next(new ErrorHandler("Internal server error!", 500));
     }
 })
@@ -54,7 +56,7 @@ exports.loginUser = catchErrors(async (req, res, next) => {
         if (!user) {
             return next(new ErrorHandler("User not exist please register yourself first", 404));
         }
-        const isPasswordMatched = user.comparePassword(password);
+        const isPasswordMatched = await user.comparePassword(password);
         if (!isPasswordMatched) {
             return next(new ErrorHandler("Invalid credentials", 403));
         }
@@ -84,7 +86,6 @@ exports.logout = catchErrors(async (req, res, next) => {
 
 exports.forgetPassword = catchErrors(async (req, res, next) => {
     try {
-        console.log("object");
         var user = await User.findOne({ email: req.body.email });
         if (!user) {
             return next(new ErrorHandler(`No account associated with ${req.body.email}`, 404))
@@ -98,14 +99,14 @@ exports.forgetPassword = catchErrors(async (req, res, next) => {
 
         const resetPasswordUrl = `${process.env.FORGET_LINK}password/reset/${resetToken}`;
 
-        const message = `Your password reset token is :- \n\n ${resetPasswordUrl}`;
+        const message = `Your password reset link is :- \n\n ${resetPasswordUrl}`;
 
 
         var defaultClient = SibApiV3Sdk.ApiClient.instance;
         var apiKey = defaultClient.authentications['api-key'];
         apiKey.apiKey = process.env.FORGETPASSWORDKEY;
         var apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-        const sender = { email: "kelaskaravadhut11@gmail.com" };
+        const sender = { email: process.env.EMAIL };
         const receivers = [{ email: `${user.email}` }];
         apiInstance.sendTransacEmail({
             sender,

@@ -90,6 +90,7 @@ const UpdateUser = () => {
                                     required
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
+                                    disabled={true}
                                 />
                             </div>
                             <div>
@@ -100,6 +101,7 @@ const UpdateUser = () => {
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
+                                    disabled={true}
                                 />
                             </div>
 

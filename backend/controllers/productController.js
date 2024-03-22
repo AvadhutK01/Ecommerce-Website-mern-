@@ -8,6 +8,7 @@ const cloudinary = require('cloudinary');
 //Create Product--Admin
 exports.createProduct = errorFunc(async (req, res, next) => {
     try {
+
         let images = [];
 
         if (typeof req.body.images === "string") {
@@ -18,14 +19,22 @@ exports.createProduct = errorFunc(async (req, res, next) => {
         const imagesLinks = [];
 
         for (let i = 0; i < images.length; i++) {
-            const result = await cloudinary.v2.uploader.upload(images[i], {
-                folder: "Products",
-            });
+            try {
+                const result = await cloudinary.v2.uploader.upload(images[i], {
+                    folder: "Products",
+                });
 
-            imagesLinks.push({
-                public_id: result.public_id,
-                url: result.secure_url,
-            });
+                imagesLinks.push({
+                    public_id: result.public_id,
+                    url: result.secure_url,
+                });
+            } catch (err) {
+                if (err && err.message && err.message.includes("Could not decode base64")) {
+                    return next(new ErrorHandler('Unsupported image format', 400));
+                } else {
+                    throw err;
+                }
+            }
         }
 
         req.body.images = imagesLinks;
@@ -118,6 +127,7 @@ exports.updateProduct = errorFunc(async (req, res) => {
         } else {
             images = req.body.images;
         }
+
         if (images !== undefined) {
             // Deleting Images From Cloudinary
             for (let i = 0; i < product.images.length; i++) {
@@ -127,14 +137,22 @@ exports.updateProduct = errorFunc(async (req, res) => {
             const imagesLinks = [];
 
             for (let i = 0; i < images.length; i++) {
-                const result = await cloudinary.v2.uploader.upload(images[i], {
-                    folder: "Products",
-                });
+                try {
+                    const result = await cloudinary.v2.uploader.upload(images[i], {
+                        folder: "Products",
+                    });
 
-                imagesLinks.push({
-                    public_id: result.public_id,
-                    url: result.secure_url,
-                });
+                    imagesLinks.push({
+                        public_id: result.public_id,
+                        url: result.secure_url,
+                    });
+                } catch (err) {
+                    if (err && err.message && err.message.includes("Could not decode base64")) {
+                        return next(new ErrorHandler('Unsupported image format', 400));
+                    } else {
+                        throw err;
+                    }
+                }
             }
 
             req.body.images = imagesLinks;

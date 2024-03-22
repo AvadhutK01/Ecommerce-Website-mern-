@@ -136,7 +136,9 @@ function App() {
         />
         <Route
           path="/admin/users"
-          element={<AdminRoute element={<UsersList />} />}
+          element={<AdminRoute >
+            <UsersList />
+          </AdminRoute>}
         />
         <Route
           path="/admin/orders"

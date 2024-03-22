@@ -13,6 +13,7 @@ import MetaData from "../layout/MetaData";
 import { Edit, Delete } from "@mui/icons-material"
 import SideBar from "./Sidebar";
 import { DELETE_PRODUCT_RESET } from "../../constants/productConstants";
+import { toast } from "react-toastify";
 
 const ProductList = () => {
     const dispatch = useDispatch();
@@ -30,14 +31,17 @@ const ProductList = () => {
 
     useEffect(() => {
         if (error) {
+            toast.error(error);
             dispatch(clearErrors());
         }
 
         if (deleteError) {
+            toast.error(deleteError);
             dispatch(clearErrors());
         }
 
         if (isDeleted) {
+            toast.success("Product deleted successfully");
             Navigate("/admin/dashboard");
             dispatch({ type: DELETE_PRODUCT_RESET });
         }

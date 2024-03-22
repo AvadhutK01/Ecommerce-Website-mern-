@@ -1,11 +1,9 @@
 import { Rating } from "@mui/material";
 import React from "react";
-import { useSelector } from 'react-redux'
 
 
 
 const ReviewCard = ({ review }) => {
-    const { user } = useSelector((state) => state.user);
     const options = {
         value: review.rating,
         readOnly: true,
@@ -13,8 +11,7 @@ const ReviewCard = ({ review }) => {
     };
 
     return (
-        <div className="reviewCard">
-            <img src={user.avatar.url} alt="User" />
+        <div className="reviewCard">;
             <p>{review.name}</p>
             <Rating {...options} />
             <span className="reviewCardComment">{review.comment}</span>

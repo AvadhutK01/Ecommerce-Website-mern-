@@ -46,7 +46,13 @@ const LoginSignUp = () => {
 
     const registerSubmit = (e) => {
         e.preventDefault();
+        if (!avatar || !name || !email || !password) {
+            return toast.warn('All values are required');
+        }
 
+        if (password.length < 8) {
+            return toast.warning('Password must be greater than 8 characters');
+        }
         const myForm = new FormData();
 
         myForm.set("name", name);
@@ -188,10 +194,11 @@ const LoginSignUp = () => {
                                     <input
                                         type="file"
                                         name="avatar"
-                                        accept="image/*"
+                                        accept="image/jpeg, image/png"
                                         onChange={registerDataChange}
                                     />
                                 </div>
+
                                 <input type="submit" value="Register" className="signUpBtn" />
                             </form>
                         </div>

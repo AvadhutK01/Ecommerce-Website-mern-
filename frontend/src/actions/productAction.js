@@ -163,7 +163,11 @@ export const createProduct = (productData) => async (dispatch) => {
         dispatch({ type: NEW_PRODUCT_REQUEST });
 
         const config = {
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity,
         };
 
         const { data } = await axios.post(
@@ -177,6 +181,7 @@ export const createProduct = (productData) => async (dispatch) => {
             payload: data,
         });
     } catch (error) {
+        console.log(error);
         dispatch({
             type: NEW_PRODUCT_FAIL,
             payload: error.response.data.message,
@@ -190,7 +195,7 @@ export const updateProduct = (id, productData) => async (dispatch) => {
         dispatch({ type: UPDATE_PRODUCT_REQUEST });
 
         const config = {
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "multipart/form-data" },
         };
 
         const { data } = await axios.put(

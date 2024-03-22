@@ -10,7 +10,6 @@ exports.newOrder = errorFunc(async (req, res, next) => {
             shippingInfo,
             orderItems,
             paymentInfo,
-            itemsPrice,
             taxPrice,
             shippingPrice,
             totalPrice
@@ -77,7 +76,6 @@ exports.getSingleOrder = errorFunc(async (req, res, next) => {
 exports.getUserOrder = errorFunc(async (req, res, next) => {
     try {
         const orders = await Order.find({ user: req.user.id });
-        console.log(orders);
         if (!orders) {
             return next(new ErrorHandler(`No order found with id ${req.params.id}`, 404));
         }
@@ -124,13 +122,13 @@ exports.updateOrderStatus = errorFunc(async (req, res, next) => {
             return next(new ErrorHandler("This order has already been delivered", 403));
         }
 
-        order.orderItems.forEach(async o => {
-            await updateStocks(o.product, o.quantity)
-        });
 
         order.orderStatus = req.body.status;
         if (req.body.status === 'Delivered') {
             order.deliveredAt = Date.now()
+            order.orderItems.forEach(async o => {
+                await updateStocks(o.product, o.quantity)
+            });
         }
         await order.save({
             validateBeforeSave: false
@@ -167,7 +165,6 @@ exports.deleteOrder = errorFunc(async (req, res, next) => {
 async function updateStocks(id, quantity) {
     try {
         const product = await Product.findById(id);
-
         product.Stock -= quantity;
 
         await product.save({

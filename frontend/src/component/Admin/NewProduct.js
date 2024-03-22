@@ -12,6 +12,7 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import SideBar from "./Sidebar";
 import { NEW_PRODUCT_RESET } from "../../constants/productConstants";
 import { useNavigate } from "react-router-dom";
+import { toast } from 'react-toastify';
 
 const NewProduct = () => {
     const dispatch = useDispatch();
@@ -35,15 +36,17 @@ const NewProduct = () => {
         "Attire",
         "Camera",
         "SmartPhones",
+        "Other"
     ];
 
     useEffect(() => {
         if (error) {
+            toast.error(error)
             dispatch(clearErrors());
         }
 
         if (success) {
-
+            toast.success('Product Added successfully');
             Navigate("/admin/dashboard");
             dispatch({ type: NEW_PRODUCT_RESET });
         }
@@ -51,6 +54,11 @@ const NewProduct = () => {
 
     const createProductSubmitHandler = (e) => {
         e.preventDefault();
+        if (!name || !price || !description || !category || !Stock || images.length <= 0) {
+            {
+                return toast.warn('All values are required');
+            }
+        }
 
         const myForm = new FormData();
 

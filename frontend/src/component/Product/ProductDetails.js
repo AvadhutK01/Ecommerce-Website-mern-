@@ -65,6 +65,8 @@ const ProductDetails = () => {
 
     const addToCartHandler = () => {
         dispatch(addItemsToCart(id, quantity));
+        toast.success("Product added to cart");
+        setQuantity(0);
     };
 
     const submitReviewToggle = () => {
@@ -72,6 +74,9 @@ const ProductDetails = () => {
     };
 
     const reviewSubmitHandler = () => {
+        if (!rating || !comment || !id) {
+            return toast.warn("All values are required")
+        }
         const myForm = new FormData();
 
         myForm.set("rating", rating);
@@ -100,7 +105,7 @@ const ProductDetails = () => {
         }
 
         dispatch(getProductDetails(id));
-    }, [dispatch, id, error]);
+    }, [dispatch, id, error, reviewError, success]);
 
     return (
         <Fragment>
@@ -111,14 +116,18 @@ const ProductDetails = () => {
                     <MetaData title={`${product.name} -- ECOMMERCE`} />
                     <div className="ProductDetails">
                         <div>
-                            <Carousel>
+                            <Carousel className="CarouselImage">
                                 {product.images &&
                                     product.images.map((item, i) => (
                                         <img
-                                            className="CarouselImage"
                                             key={i}
                                             src={item.url}
                                             alt={`${i} Slide`}
+                                            style={{
+                                                width: '100%',
+                                                height: '300px',
+                                                objectFit: 'cover',
+                                            }}
                                         />
                                     ))}
                             </Carousel>
